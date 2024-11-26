@@ -1,30 +1,46 @@
-<!-- Plugin Configuration File. Read more: https://plugins.jetbrains.com/docs/intellij/plugin-configuration-file.html -->
 <idea-plugin>
-    <!-- Unique identifier of the plugin. It should be FQN. It cannot be changed between the plugin versions. -->
-    <id>com.namecheap.nameko-pycharm</id>
+    <id>com.namecheap.nameko.rpc</id>
+    <name>Nameko RPC Support</name>
+    <version>1.0.0</version>
+    <vendor>Namecheap</vendor>
 
-    <!-- Public plugin name should be written in Title Case.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-name -->
-    <name>Nameko-pycharm</name>
-
-    <!-- A displayed Vendor name or Organization ID displayed on the Plugins Page. -->
-    <vendor email="support@yourcompany.com" url="https://www.yourcompany.com">YourCompany</vendor>
-
-    <!-- Description of the plugin displayed on the Plugin Page and IDE Plugin Manager.
-         Simple HTML elements (text formatting, paragraphs, and lists) can be added inside of <![CDATA[ ]]> tag.
-         Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
-    Enter short description for your plugin here.<br>
-    <em>most HTML tags may be used</em>
-  ]]></description>
+        Provides code completion and type inference support for Nameko RPC services.
+        - Code completion for RPC methods
+        - Type inference for method parameters
+        - Service name detection
+    ]]></description>
 
-    <!-- Product and plugin compatibility requirements.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>com.intellij.modules.python</depends>
 
-    <!-- Extension points defined by the plugin.
-         Read more: https://plugins.jetbrains.com/docs/intellij/plugin-extension-points.html -->
     <extensions defaultExtensionNs="com.intellij">
-
+        <psi.referenceContributor
+            language="Python"
+            implementation="com.namecheap.nameko.reference.NamekoReferenceContributor"/>
+        <localInspection
+            language="Python"
+            displayName="Invalid Nameko RPC method"
+            groupName="Python"
+            enabledByDefault="true"
+            level="ERROR"
+            implementationClass="com.namecheap.nameko.inspection.InvalidRpcMethodInspection"/>
+        <notificationGroup
+                id="RPC Plugin Notifications"
+                displayType="BALLOON"/>
+        <projectService serviceImplementation="com.namecheap.nameko.service.ProjectInitializationService"/>
     </extensions>
+    <extensions defaultExtensionNs="Pythonid">
+        <typeProvider implementation="com.namecheap.nameko.RpcProxyTypeProvider"/>
+    </extensions>
+    <!-- Add the action -->
+    <actions>
+        <action id="com.namecheap.nameko.ShowServices"
+                class="com.namecheap.nameko.actions.ShowServicesAction"
+                text="Show RPC Services"
+                description="Display detected RPC services">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
+            <add-to-group group-id="MainToolBar" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>

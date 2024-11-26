@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,25 +35,31 @@ public class FileCollector {
             // 2. Not in excluded folders
             // 3. Not in test folders (unless configured to include them)
             return allPythonFiles.stream()
-                .filter(file -> fileIndex.isInContent(file))  // Excludes files in .git, build, etc.
-                .filter(file -> !fileIndex.isExcluded(file))  // Excludes explicitly excluded directories
-                .filter(file -> {
-                    Module module = fileIndex.getModuleForFile(file);
-                    if (module == null) return false;
-                    
-                    // Check if file is in source roots
-                    ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
-                    VirtualFile[] sourceRoots = rootManager.getSourceRoots(false); // false = non-test sources
-                    
-                    for (VirtualFile root : sourceRoots) {
-                        if (file.getPath().startsWith(root.getPath())) {
-                            return true;
-                        }
-                    }
-                    return false;
-                })
+                .filter(file -> isFileGoodForIndexing(fileIndex, file))  // Excludes files in .git, build, etc.
                 .collect(Collectors.toSet());
         });
+    }
+
+    public static boolean isFileGoodForIndexing(ProjectFileIndex fileIndex, @NotNull VirtualFile fvile) {
+        final Predicate<VirtualFile> isExcluded = fileIndex::isInContent;
+        final Predicate<VirtualFile> isNotExcluded = file -> !fileIndex.isExcluded(file);
+        final Predicate<VirtualFile> isModule = file -> {
+                Module module = fileIndex.getModuleForFile(file);
+                if (module == null) return false;
+
+                // Check if file is in source roots
+                ModuleRootManager rootManager = ModuleRootManager.getInstance(module);
+                VirtualFile[] sourceRoots = rootManager.getSourceRoots(false); // false = non-test sources
+
+                for (VirtualFile root : sourceRoots) {
+                    if (file.getPath().startsWith(root.getPath())) {
+                        return true;
+                    }
+                }
+                return false;
+        };
+
+        return isExcluded.and(isNotExcluded).and(isModule).test(fvile);
     }
     
     @NotNull

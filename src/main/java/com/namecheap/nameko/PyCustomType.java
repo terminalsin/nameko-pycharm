@@ -1,19 +1,34 @@
 package com.namecheap.nameko;
 
-rivate abstract class PyCustomType implements PyType {
-    protected final PsiElement anchor;
-    protected final String serviceName;
-    protected final ServiceInfo serviceInfo;
+import com.intellij.psi.PsiElement;
+import com.intellij.util.ProcessingContext;
+import com.jetbrains.python.psi.*;
+import com.jetbrains.python.psi.resolve.PyResolveContext;
+import com.jetbrains.python.psi.resolve.RatedResolveResult;
+import com.jetbrains.python.psi.types.PyType;
+import com.namecheap.nameko.model.ParameterInfo;
+import com.namecheap.nameko.model.ServiceInfo;
+import com.namecheap.nameko.model.ServiceMethod;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-    protected PyCustomType(PsiElement anchor, String serviceName, ServiceInfo serviceInfo) {
-        this.anchor = anchor;
-        this.serviceName = serviceName;
+import java.util.Collections;
+import java.util.List;
+
+public class PyCustomType implements PyType {
+    private final ServiceInfo serviceInfo;
+    private final String serviceName;
+    private final PsiElement anchor;
+
+    public PyCustomType(ServiceInfo serviceInfo, String serviceName, PsiElement anchor) {
         this.serviceInfo = serviceInfo;
+        this.serviceName = serviceName;
+        this.anchor = anchor;
     }
 
     @Override
-    public boolean isValid() {
-        return true;
+    public void assertValid(String message) {
+
     }
 
     @Override
@@ -22,39 +37,25 @@ rivate abstract class PyCustomType implements PyType {
     }
 
     @Override
-    public @Nullable List<? extends RatedResolveResult> resolveMember(
-            @NotNull String name,
-            @Nullable PyExpression location,
-            @NotNull AccessDirection direction,
-            @NotNull PyResolveContext resolveContext,
-            boolean inherited) {
+    public @Nullable List<? extends RatedResolveResult> resolveMember(@NotNull String name,
+                                                                      @Nullable PyExpression location,
+                                                                      @NotNull AccessDirection direction,
+                                                                      @NotNull PyResolveContext resolveContext) {
         ServiceMethod method = serviceInfo.findMethod(name);
         if (method == null) return null;
 
-        return Collections.singletonList(
-            new RatedResolveResult(RatedResolveResult.RATE_NORMAL,
-                createMethodElement(method)));
+        return Collections.singletonList(new RatedResolveResult(RatedResolveResult.RATE_HIGH, createMethodElement(method)));
+    }
+
+    @Override
+    public Object[] getCompletionVariants(String completionPrefix, PsiElement location, ProcessingContext context) {
+        return serviceInfo.getMethods().stream()
+                .map(this::createMethodElement)
+                .toArray();
     }
 
     private PsiElement createMethodElement(ServiceMethod method) {
-        // Create a fake Python method element for inspection
-        StringBuilder methodText = new StringBuilder();
-        methodText.append("def ").append(method.name).append("(self");
-        
-        for (ParameterInfo param : method.parameters) {
-            methodText.append(", ").append(param.name);
-            if (param.type != null) {
-                methodText.append(": ").append(param.type);
-            }
-            if (param.defaultValue != null) {
-                methodText.append(" = ").append(param.defaultValue);
-            }
-        }
-        
-        methodText.append(") -> ").append(method.returnType).append(":\n    pass");
-
-        return PyElementGenerator.getInstance(anchor.getProject())
-            .createFromText(LanguageLevel.getDefault(), PyFunction.class, methodText.toString());
+        return method.getElement();
     }
 
     @Override

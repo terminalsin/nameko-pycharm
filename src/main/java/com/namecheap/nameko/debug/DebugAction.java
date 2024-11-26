@@ -1,9 +1,11 @@
 package com.namecheap.nameko.debug;
 
+import com.intellij.notification.NotificationType;
 import com.intellij.openapi.actionSystem.*;
 import com.intellij.openapi.project.DumbAware;
 import com.intellij.openapi.project.Project;
 import com.namecheap.nameko.util.PluginLogger;
+import org.jetbrains.annotations.NotNull;
 
 public class DebugAction extends AnAction implements DumbAware {
 

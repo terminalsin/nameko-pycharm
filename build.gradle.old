@@ -1,0 +1,79 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.intellij.platform' version '2.1.0'
+}
+
+group 'com.namecheap'
+version '1.0.0'
+
+repositories {
+    mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
+dependencies {
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+}
+
+intellijPlatform {
+    // Define target IDE type and version
+    dependency {
+        type = 'PC' // PyCharm
+        version = '2024.3'
+    }
+
+    // Plugin configuration
+    pluginConfiguration {
+        id = 'com.namecheap.nameko.rpc'
+        name = 'Nameko RPC Support'
+        version = '1.0.0'
+        description = '''
+            Provides code completion and type inference support for Nameko RPC services.
+            - Code completion for RPC methods
+            - Type inference for method parameters
+            - Service name detection
+        '''
+    }
+
+    // Dependencies
+    plugins {
+        bundledPlugin('PythonCore')
+    }
+}
+
+tasks {
+    test {
+        useJUnitPlatform()
+        
+        // Enable debug logging for tests
+        systemProperty("idea.log.debug.categories", "#com.namecheap.nameko.debug")
+        
+        testLogging {
+            events("passed", "skipped", "failed")
+        }
+    }
+
+    // Configure runIde task
+    runIde {
+        // Enable debug logging
+        jvmArgs = [
+            '-Didea.log.debug=true',
+            '-Didea.log.trace=true',
+            '-Didea.log.debug.categories=#com.namecheap.nameko.debug',
+            '-Didea.is.internal=true'
+        ]
+        
+        autoReloadPlugins = true
+    }
+}
+
+// Set Java compatibility
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}

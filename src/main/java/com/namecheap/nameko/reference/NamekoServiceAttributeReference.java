@@ -1,5 +1,16 @@
 package com.namecheap.nameko.reference;
 
+import com.intellij.psi.PsiElement;
+import com.intellij.psi.PsiReferenceBase;
+import com.jetbrains.python.psi.PyCallExpression;
+import com.jetbrains.python.psi.PyExpression;
+import com.jetbrains.python.psi.PyStringLiteralExpression;
+import com.jetbrains.python.psi.PyTargetExpression;
+import com.namecheap.nameko.cache.ServiceCache;
+import com.namecheap.nameko.model.ServiceInfo;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 public class NamekoServiceAttributeReference extends PsiReferenceBase<PyTargetExpression> {
     
     public NamekoServiceAttributeReference(@NotNull PyTargetExpression element) {

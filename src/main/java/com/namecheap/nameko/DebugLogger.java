@@ -24,7 +24,14 @@ public class DebugLogger {
     public static void warn(String message) {
         log("WARN", message);
     }
-    
+
+    public static void warn(String message, Throwable e) {
+        log("WARN", message);
+        if (e != null) {
+            e.printStackTrace(System.out);
+        }
+    }
+
     private static void log(String level, String message) {
         String timestamp = LocalDateTime.now().format(formatter);
         System.out.printf("[%s] [%s] [RpcPlugin] %s%n", timestamp, level, message);
