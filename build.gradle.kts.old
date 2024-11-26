@@ -1,0 +1,53 @@
+import org.jetbrains.intellij.platform.gradle.TestFrameworkType
+
+plugins {
+    id("java")
+    id("org.jetbrains.intellij.platform") version "2.1.0"
+}
+
+group = "com.namecheap"
+version = "1.0-SNAPSHOT"
+
+repositories {
+    mavenCentral()
+    intellijPlatform {
+        defaultRepositories()
+    }
+}
+
+dependencies {
+    intellijPlatform {
+        pycharmCommunity("2024.3")
+        bundledPlugin("PythonCore")
+
+        pluginVerifier()
+        zipSigner()
+        instrumentationTools()
+        testFramework(TestFrameworkType.Platform)
+    }
+
+
+
+    compileOnly("org.projectlombok:lombok:1.18.36")
+    annotationProcessor("org.projectlombok:lombok:1.18.36")
+
+    testCompileOnly("org.projectlombok:lombok:1.18.36")
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.36")
+
+    testImplementation("org.assertj:assertj-core:3.24.2")
+}
+
+intellijPlatform {
+    pluginConfiguration {
+        id.set("com.namecheap.rpc.type.inference")
+        name.set("RPC Type Inference")
+        version.set("1.0.0")
+        description.set("Provides type inference and autocompletion support for Nameko RPC services")
+        changeNotes.set("""
+            First version:
+            - RPC service detection
+            - Type inference
+            - Code completion
+        """.trimIndent())
+    }
+}
